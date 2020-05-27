@@ -1,0 +1,99 @@
+import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import * as knnClassifier from '@tensorflow-models/knn-classifier';
+import * as tf from '@tensorflow/tfjs';
+import * as mobilenet from '@tensorflow-models/mobilenet';
+import {Prediction} from "../../model/prediction";
+
+@Component({
+  selector: 'app-image-uploader',
+  templateUrl: './image-uploader.component.html',
+  styleUrls: ['./image-uploader.component.css']
+})
+export class ImageUploaderComponent implements OnInit {
+  imageSrc: string;
+  @ViewChild('img', {static: false}) imageEl: ElementRef;
+  knnClassifier: any = this.createKNNClassifier();
+  mobileNetModel: any = this.createMobileNetModel();
+  predictions: Prediction[];
+  model: any;
+  loading = true;
+
+  constructor() { }
+
+  public async ngOnInit() {
+    this.loading = true;
+    this.model = await mobilenet.load();
+    this.loading = false;
+  }
+
+  public async createKNNClassifier() {
+    console.log('Loading KNN Classifier');
+    return knnClassifier.create();
+  };
+
+  public async createMobileNetModel()  {
+    console.log('Loading Mobilenet Model');
+    return mobilenet.load();
+  };
+
+  public async fileChangeEvent(event) {
+    if (event.target.files && event.target.files[0]) {
+      const reader = new FileReader();
+
+      reader.readAsDataURL(event.target.files[0]);
+
+      reader.onload = (res: any) => {
+        this.imageSrc = res.target.result;
+        console.log(this.imageSrc)
+        this.addDatasetClass(this.imageSrc, 'paragon');
+        setTimeout(async () => {
+          const imgEl = this.imageEl.nativeElement;
+          this.predictions = await this.model.classify(imgEl);
+        }, 0);
+      };
+    }
+  }
+
+  public async saveClassifier(classifierModel) {
+    let datasets = await classifierModel.getClassifierDataset();
+    let datasetObject = {};
+    Object.keys(datasets).forEach(async (key) => {
+      let data = await datasets[key].dataSync();
+      datasetObject[key] = Array.from(data);
+    });
+    let jsonModel = JSON.stringify(datasetObject);
+
+    let downloader = document.createElement('a');
+    downloader.download = "model.json";
+    downloader.href = 'data:text/text;charset=utf-8,' + encodeURIComponent(jsonModel);
+    document.body.appendChild(downloader);
+    downloader.click();
+    downloader.remove();
+  };
+
+  public async uploadModel (classifierModel, event) {
+    let inputModel = event.target.files;
+    console.log("Uploading");
+    let reader = new FileReader();
+    if (inputModel.length>0) {
+      reader.onload = async () => {
+        let dataset = reader.result as string;
+        let tensorObj = JSON.parse(dataset);
+
+        Object.keys(tensorObj).forEach((key) => {
+          tensorObj[key] = tf.tensor(tensorObj[key], [tensorObj[key].length / 1024, 1024]);
+        });
+        classifierModel.setClassifierDataset(tensorObj);
+        console.log("Classifier has been set up! Congrats! ");
+      };
+    }
+    await reader.readAsText(inputModel[0]);
+    console.log("Uploaded");
+  };
+
+  public async addDatasetClass (img, label) {
+    const activation = this.mobileNetModel.infer(img, 'conv_preds');
+    this.knnClassifier.addExample(activation, label);
+    img.dispose();
+  };
+}
