@@ -3,6 +3,8 @@ import * as knnClassifier from '@tensorflow-models/knn-classifier';
 import * as tf from '@tensorflow/tfjs';
 import * as mobilenet from '@tensorflow-models/mobilenet';
 import {Prediction} from "../../model/prediction";
+import {KNNClassifier} from "@tensorflow-models/knn-classifier";
+import {MobileNet} from "@tensorflow-models/mobilenet";
 
 @Component({
   selector: 'app-image-uploader',
@@ -12,29 +14,19 @@ import {Prediction} from "../../model/prediction";
 export class ImageUploaderComponent implements OnInit {
   imageSrc: string;
   @ViewChild('img', {static: false}) imageEl: ElementRef;
-  knnClassifier: any = this.createKNNClassifier();
-  mobileNetModel: any = this.createMobileNetModel();
-  predictions: Prediction[];
-  model: any;
-  loading = true;
+  public knnClassifier: KNNClassifier;
+  public mobileNetModel: MobileNet;
+  public predictions: Prediction[];
+  public loading: boolean = true;
 
   constructor() { }
 
   public async ngOnInit() {
     this.loading = true;
-    this.model = await mobilenet.load();
+    this.mobileNetModel = await mobilenet.load();
+    this.knnClassifier = await knnClassifier.create();
     this.loading = false;
   }
-
-  public async createKNNClassifier() {
-    console.log('Loading KNN Classifier');
-    return knnClassifier.create();
-  };
-
-  public async createMobileNetModel()  {
-    console.log('Loading Mobilenet Model');
-    return mobilenet.load();
-  };
 
   public async fileChangeEvent(event) {
     if (event.target.files && event.target.files[0]) {
@@ -44,11 +36,11 @@ export class ImageUploaderComponent implements OnInit {
 
       reader.onload = (res: any) => {
         this.imageSrc = res.target.result;
-        console.log(this.imageSrc)
-        this.addDatasetClass(this.imageSrc, 'paragon');
+
         setTimeout(async () => {
           const imgEl = this.imageEl.nativeElement;
-          this.predictions = await this.model.classify(imgEl);
+          this.predictions = await this.mobileNetModel.classify(imgEl);
+          await this.addDatasetClass(imgEl,'test');
         }, 0);
       };
     }
@@ -71,7 +63,7 @@ export class ImageUploaderComponent implements OnInit {
     downloader.remove();
   };
 
-  public async uploadModel (classifierModel, event) {
+  public async uploadModel(classifierModel, event) {
     let inputModel = event.target.files;
     console.log("Uploading");
     let reader = new FileReader();
@@ -91,9 +83,12 @@ export class ImageUploaderComponent implements OnInit {
     console.log("Uploaded");
   };
 
-  public async addDatasetClass (img, label) {
-    const activation = this.mobileNetModel.infer(img, 'conv_preds');
+  public async addDatasetClass(img, label) {
+    const activation = this.mobileNetModel.infer(img, true);
+    console.log(activation);
     this.knnClassifier.addExample(activation, label);
-    img.dispose();
+
+    console.log(await this.knnClassifier.predictClass(activation));
+    console.log(await this.mobileNetModel.classify(img));
   };
 }
