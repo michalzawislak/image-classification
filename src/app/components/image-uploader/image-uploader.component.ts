@@ -13,7 +13,11 @@ import {MobileNet} from "@tensorflow-models/mobilenet";
 })
 export class ImageUploaderComponent implements OnInit {
   imageSrc: string;
+  classifiedImgScr: string;
   @ViewChild('img', {static: false}) imageEl: ElementRef;
+  @ViewChild('classifiedImg', {static: false}) classifiedImage: ElementRef;
+  @ViewChild('label', {static: false}) labelInput: ElementRef;
+
   public knnClassifier: KNNClassifier;
   public mobileNetModel: MobileNet;
   public predictions: Prediction[];
@@ -39,8 +43,10 @@ export class ImageUploaderComponent implements OnInit {
 
         setTimeout(async () => {
           const imgEl = this.imageEl.nativeElement;
+          const labelInput = this.labelInput.nativeElement;
           this.predictions = await this.mobileNetModel.classify(imgEl);
-          await this.addDatasetClass(imgEl,'test');
+          await this.addDatasetClass(imgEl,labelInput.value);
+          labelInput.value = '';
         }, 0);
       };
     }
@@ -67,7 +73,7 @@ export class ImageUploaderComponent implements OnInit {
     let inputModel = event.target.files;
     console.log("Uploading");
     let reader = new FileReader();
-    if (inputModel.length>0) {
+    if (inputModel.length > 0) {
       reader.onload = async () => {
         let dataset = reader.result as string;
         let tensorObj = JSON.parse(dataset);
@@ -84,11 +90,37 @@ export class ImageUploaderComponent implements OnInit {
   };
 
   public async addDatasetClass(img, label) {
-    const activation = this.mobileNetModel.infer(img, true);
-    console.log(activation);
+    // @ts-ignore
+    const activation = this.mobileNetModel.infer(img,'conv_preds');
     this.knnClassifier.addExample(activation, label);
-
-    console.log(await this.knnClassifier.predictClass(activation));
-    console.log(await this.mobileNetModel.classify(img));
   };
+
+  public async imageClassification(event) {
+    if (event.target.files && event.target.files[0]) {
+      const reader = new FileReader();
+
+      reader.readAsDataURL(event.target.files[0]);
+
+      reader.onload = (res: any) => {
+        this.classifiedImgScr = res.target.result;
+
+        setTimeout(async () => {
+          const imgEl = this.classifiedImage.nativeElement;
+          if(this.knnClassifier.getNumClasses() > 0) {
+            const activation = this.mobileNetModel.infer(imgEl, true);
+            const result = await this.knnClassifier.predictClass(activation);
+            console.log(result)
+            document.getElementById('console').innerText = `
+            prediction: $(result.label}\n
+            probability: ${result.confidences}
+          `;
+
+          }
+          await tf.nextFrame();
+        }, 0);
+      };
+    }
+  }
 }
+
+
