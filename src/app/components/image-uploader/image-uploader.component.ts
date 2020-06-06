@@ -5,6 +5,7 @@ import * as mobilenet from '@tensorflow-models/mobilenet';
 import {Prediction} from "../../model/prediction";
 import {KNNClassifier} from "@tensorflow-models/knn-classifier";
 import {MobileNet} from "@tensorflow-models/mobilenet";
+import {PredictionClass} from "../../model/predictionClass";
 
 @Component({
   selector: 'app-image-uploader',
@@ -111,11 +112,11 @@ export class ImageUploaderComponent implements OnInit {
           const imgEl = this.classifiedImage.nativeElement;
           if(this.knnClassifier.getNumClasses() > 0) {
             const activation = this.mobileNetModel.infer(imgEl, true);
-            const result = await this.knnClassifier.predictClass(activation);
+            const result: PredictionClass = await this.knnClassifier.predictClass(activation);
             console.log(result)
             document.getElementById('console').innerText = `
-            prediction: $(result.label}\n
-            probability: ${result.confidences}
+            prediction: ${result.label}\n
+            probability: ${result.confidences[result.label]}
           `;
 
           }
@@ -125,5 +126,3 @@ export class ImageUploaderComponent implements OnInit {
     }
   }
 }
-
-

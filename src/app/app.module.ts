@@ -5,7 +5,6 @@ import { AppComponent } from './app.component';
 import { ImageUploaderComponent } from './components/image-uploader/image-uploader.component';
 import { SharedModule } from "./shared/shared.module";
 import {CoreModule} from "./core/core.module";
-import {NgbDropdownModule} from "@ng-bootstrap/ng-bootstrap";
 
 @NgModule({
   declarations: [
@@ -16,7 +15,6 @@ import {NgbDropdownModule} from "@ng-bootstrap/ng-bootstrap";
     BrowserModule,
     CoreModule,
     SharedModule,
-    NgbDropdownModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
