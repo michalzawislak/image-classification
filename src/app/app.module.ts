@@ -3,6 +3,9 @@ import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
 import { ImageUploaderComponent } from './components/image-uploader/image-uploader.component';
+import { SharedModule } from "./shared/shared.module";
+import {CoreModule} from "./core/core.module";
+import {NgbDropdownModule} from "@ng-bootstrap/ng-bootstrap";
 
 @NgModule({
   declarations: [
@@ -10,7 +13,10 @@ import { ImageUploaderComponent } from './components/image-uploader/image-upload
     ImageUploaderComponent
   ],
   imports: [
-    BrowserModule
+    BrowserModule,
+    CoreModule,
+    SharedModule,
+    NgbDropdownModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

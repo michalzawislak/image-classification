@@ -9,7 +9,7 @@ import {MobileNet} from "@tensorflow-models/mobilenet";
 @Component({
   selector: 'app-image-uploader',
   templateUrl: './image-uploader.component.html',
-  styleUrls: ['./image-uploader.component.css']
+  styleUrls: ['./image-uploader.component.scss']
 })
 export class ImageUploaderComponent implements OnInit {
   imageSrc: string;
@@ -33,22 +33,26 @@ export class ImageUploaderComponent implements OnInit {
   }
 
   public async fileChangeEvent(event) {
+    const labelInput = this.labelInput.nativeElement;
+    const label = labelInput.value;
     if (event.target.files && event.target.files[0]) {
-      const reader = new FileReader();
+      const files = [...event.target.files];
+      files.forEach( file => {
+        const reader = new FileReader();
 
-      reader.readAsDataURL(event.target.files[0]);
+        reader.readAsDataURL(file);
 
-      reader.onload = (res: any) => {
-        this.imageSrc = res.target.result;
+        reader.onload = (res: any) => {
+          this.imageSrc = res.target.result;
 
-        setTimeout(async () => {
-          const imgEl = this.imageEl.nativeElement;
-          const labelInput = this.labelInput.nativeElement;
-          this.predictions = await this.mobileNetModel.classify(imgEl);
-          await this.addDatasetClass(imgEl,labelInput.value);
-          labelInput.value = '';
-        }, 0);
-      };
+          setTimeout(async () => {
+            const imgEl = this.imageEl.nativeElement;
+            this.predictions = await this.mobileNetModel.classify(imgEl);
+            await this.addDatasetClass(imgEl,label);
+          }, 500);
+        };
+      })
+      labelInput.value = '';
     }
   }
 
@@ -93,14 +97,13 @@ export class ImageUploaderComponent implements OnInit {
     // @ts-ignore
     const activation = this.mobileNetModel.infer(img,'conv_preds');
     this.knnClassifier.addExample(activation, label);
+    console.log(label)
   };
 
   public async imageClassification(event) {
     if (event.target.files && event.target.files[0]) {
       const reader = new FileReader();
-
       reader.readAsDataURL(event.target.files[0]);
-
       reader.onload = (res: any) => {
         this.classifiedImgScr = res.target.result;
 

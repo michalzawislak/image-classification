@@ -1,12 +1,12 @@
 <div class="container">
   <div class="input-data">
     <div class="custom-file">
-      <input type="text" #label>
+      <input type="text" placeholder="Label" #label>
       <input type="file" multiple (change)="fileChangeEvent($event)">
       <label class="custom-file-label">Choose file</label>
     </div>
 
-    <img [src]="imageSrc" #img *ngIf="imageSrc"/>
+<!--    <img [src]="imageSrc" #img *ngIf="imageSrc"/>-->
 
 <!--    <div class="list-group">-->
 <!--      <div class="list-group-item" *ngFor="let prediction of predictions">-->
@@ -20,9 +20,7 @@
       <input type="file" class="custom-file-input" (change)="imageClassification($event)">
       <label class="custom-file-label">Choose file</label>
     </div>
-
     <img [src]="classifiedImgScr" #classifiedImg *ngIf="classifiedImgScr"/>
-
     <div id="console"></div>
   </div>
 </div>
