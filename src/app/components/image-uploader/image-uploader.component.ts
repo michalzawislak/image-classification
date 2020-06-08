@@ -38,7 +38,8 @@ export class ImageUploaderComponent implements OnInit {
     const label = labelInput.value;
     if (event.target.files && event.target.files[0]) {
       const files = [...event.target.files];
-      files.forEach( file => {
+      files.forEach( (file, i) => {
+
         const reader = new FileReader();
 
         reader.readAsDataURL(file);
@@ -53,19 +54,18 @@ export class ImageUploaderComponent implements OnInit {
           }, 500);
         };
       })
-      labelInput.value = '';
     }
   }
 
   public async saveClassifier(classifierModel) {
-    let datasets = await classifierModel.getClassifierDataset();
-    let datasetObject = {};
-    Object.keys(datasets).forEach(async (key) => {
-      let data = await datasets[key].dataSync();
+    let dataset = classifierModel.getClassifierDataset()
+    let datasetObject = {}
+    Object.keys(dataset).forEach((key) => {
+      let data = dataset[key].dataSync();
       datasetObject[key] = Array.from(data);
     });
-    let jsonModel = JSON.stringify(datasetObject);
-
+    let jsonModel = JSON.stringify(datasetObject)
+    console.log("Classifier saved!");
     let downloader = document.createElement('a');
     downloader.download = "model.json";
     downloader.href = 'data:text/text;charset=utf-8,' + encodeURIComponent(jsonModel);
@@ -87,7 +87,7 @@ export class ImageUploaderComponent implements OnInit {
           tensorObj[key] = tf.tensor(tensorObj[key], [tensorObj[key].length / 1024, 1024]);
         });
         classifierModel.setClassifierDataset(tensorObj);
-        console.log("Classifier has been set up! Congrats! ");
+        console.log("Classifier has been set up! ");
       };
     }
     await reader.readAsText(inputModel[0]);
@@ -116,9 +116,8 @@ export class ImageUploaderComponent implements OnInit {
             console.log(result)
             document.getElementById('console').innerText = `
             prediction: ${result.label}\n
-            probability: ${result.confidences[result.label]}
+            probability: ${result.confidences[result.label] * 100}%
           `;
-
           }
           await tf.nextFrame();
         }, 0);

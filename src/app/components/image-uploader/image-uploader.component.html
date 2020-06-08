@@ -1,47 +1,38 @@
 <div class="container">
-  <div class="input-data">
-    <div class="custom-file">
-<!--      <input type="text" placeholder="Label" #label>-->
-<!--      <input type="file" multiple (change)="fileChangeEvent($event)">-->
-<!--      <label class="custom-file-label">Choose file</label>-->
-
+  <div class="row">
+    <div class="col-4">
       <div class="form-group">
         <select class="form-control" #label>
           <option>Paragon</option>
           <option>Faktura</option>
           <option>Bilet PKP</option>
-          <option>Balon</option>
         </select>
       </div>
-<!--      <div class="input-group mb-3">-->
-<!--        <div class="input-group-prepend">-->
-<!--          <span class="input-group-text" >Default</span>-->
-<!--        </div>-->
-<!--        <input type="text" class="form-control" #label>-->
-<!--      </div>-->
       <div class="input-group">
-        <div class="custom-file">
-          <input type="file" class="custom-file-input" id="inputFile" multiple (change)="fileChangeEvent($event)">
-          <label class="custom-file-label" for="inputFile">Wybierz pliki</label>
-        </div>
+        <input type="file" class="custom-file-input" id="inputFile" multiple (change)="fileChangeEvent($event)">
+        <label class="custom-file-label" for="inputFile">Choose files</label>
+        <img [src]="imageSrc" #img *ngIf="imageSrc" [hidden]="true"/>
       </div>
-      <img [src]="imageSrc" #img *ngIf="imageSrc" [hidden]="true"/>
     </div>
-
-<!--    <div class="list-group">-->
-<!--      <div class="list-group-item" *ngFor="let prediction of predictions">-->
-<!--        {{prediction.className}} - {{prediction.probability}}-->
-<!--      </div>-->
-<!--    </div>-->
-  </div>
-
-  <div class="check-data">
-    <div class="custom-file">
-      <input type="file" class="custom-file-input" (change)="imageClassification($event)">
-      <label class="custom-file-label">Choose file</label>
+    <div class="col-4">
+        <button type="button" class="btn btn-primary" (click)="saveClassifier(knnClassifier)">Save model</button>
     </div>
-    <div id="console"></div>
-    <img [src]="classifiedImgScr" #classifiedImg *ngIf="classifiedImgScr"/>
+    <div class="col-4">
+      <div class="custom-file">
+        <input type="file" class="custom-file-input" id="uploadClassifier" multiple (change)="uploadModel(knnClassifier, $event)">
+        <label class="custom-file-label" for="uploadClassifier">Upload model</label>
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="check-data">
+        <div class="custom-file">
+          <input type="file" class="custom-file-input" (change)="imageClassification($event)">
+          <label class="custom-file-label">Choose file</label>
+        </div>
+        <div id="console"></div>
+        <img [src]="classifiedImgScr" #classifiedImg *ngIf="classifiedImgScr"/>
+      </div>
+    </div>
   </div>
 </div>
 
