@@ -6,6 +6,7 @@ import {Prediction} from "../../model/prediction";
 import {KNNClassifier} from "@tensorflow-models/knn-classifier";
 import {MobileNet} from "@tensorflow-models/mobilenet";
 import {PredictionClass} from "../../model/predictionClass";
+import * as cocoSSD from '@tensorflow-models/coco-ssd';
 
 @Component({
   selector: 'app-image-uploader',
@@ -18,40 +19,38 @@ export class ImageUploaderComponent implements OnInit {
   @ViewChild('img', {static: false}) imageEl: ElementRef;
   @ViewChild('classifiedImg', {static: false}) classifiedImage: ElementRef;
   @ViewChild('label', {static: false}) labelInput: ElementRef;
+  @ViewChild('webcamElement', {static: false}) webcamElement: ElementRef;
 
   public knnClassifier: KNNClassifier;
   public mobileNetModel: MobileNet;
   public predictions: Prediction[];
-  public loading: boolean = true;
+  public loading: boolean = false;
 
   constructor() { }
 
   public async ngOnInit() {
-    this.loading = true;
     this.mobileNetModel = await mobilenet.load();
     this.knnClassifier = await knnClassifier.create();
-    this.loading = false;
   }
 
-  public async fileChangeEvent(event) {
+  public async getClassifierImages(event) {
     const labelInput = this.labelInput.nativeElement;
     const label = labelInput.value;
+    this.loading = true;
     if (event.target.files && event.target.files[0]) {
       const files = [...event.target.files];
       files.forEach( (file, i) => {
-
         const reader = new FileReader();
-
         reader.readAsDataURL(file);
 
         reader.onload = (res: any) => {
           this.imageSrc = res.target.result;
-
           setTimeout(async () => {
             const imgEl = this.imageEl.nativeElement;
             this.predictions = await this.mobileNetModel.classify(imgEl);
             await this.addDatasetClass(imgEl,label);
-          }, 500);
+            if(i === files.length - 1) this.loading = false;
+          }, 0);
         };
       })
     }
@@ -65,7 +64,7 @@ export class ImageUploaderComponent implements OnInit {
       datasetObject[key] = Array.from(data);
     });
     let jsonModel = JSON.stringify(datasetObject)
-    console.log("Classifier saved!");
+
     let downloader = document.createElement('a');
     downloader.download = "model.json";
     downloader.href = 'data:text/text;charset=utf-8,' + encodeURIComponent(jsonModel);
@@ -98,7 +97,6 @@ export class ImageUploaderComponent implements OnInit {
     // @ts-ignore
     const activation = this.mobileNetModel.infer(img,'conv_preds');
     this.knnClassifier.addExample(activation, label);
-    console.log(label)
   };
 
   public async imageClassification(event) {
@@ -113,11 +111,10 @@ export class ImageUploaderComponent implements OnInit {
           if(this.knnClassifier.getNumClasses() > 0) {
             const activation = this.mobileNetModel.infer(imgEl, true);
             const result: PredictionClass = await this.knnClassifier.predictClass(activation);
-            console.log(result)
-            document.getElementById('console').innerText = `
+            console.log(`
             prediction: ${result.label}\n
             probability: ${result.confidences[result.label] * 100}%
-          `;
+          `);
           }
           await tf.nextFrame();
         }, 0);

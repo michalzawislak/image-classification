@@ -1,4 +1,9 @@
 <div class="container">
+  <div class="loader" *ngIf="loading">
+    <div class="spinner-border text-primary" >
+      <span class="sr-only">Loading...</span>
+    </div>
+  </div>
   <div class="row">
     <div class="col-4">
       <div class="form-group">
@@ -9,13 +14,13 @@
         </select>
       </div>
       <div class="input-group">
-        <input type="file" class="custom-file-input" id="inputFile" multiple (change)="fileChangeEvent($event)">
-        <label class="custom-file-label" for="inputFile">Choose files</label>
+        <input type="file" class="custom-file-input" id="inputFile" multiple (change)="getClassifierImages($event)">
+        <label class="custom-file-label" for="inputFile">Images to classify</label>
         <img [src]="imageSrc" #img *ngIf="imageSrc" [hidden]="true"/>
       </div>
     </div>
     <div class="col-4">
-        <button type="button" class="btn btn-primary" (click)="saveClassifier(knnClassifier)">Save model</button>
+        <button type="button" class="btn btn-primary" (click)="saveClassifier(knnClassifier)">Save model json</button>
     </div>
     <div class="col-4">
       <div class="custom-file">
@@ -23,13 +28,14 @@
         <label class="custom-file-label" for="uploadClassifier">Upload model</label>
       </div>
     </div>
+  </div>
+  <div class="row">
     <div class="col-12">
       <div class="check-data">
         <div class="custom-file">
           <input type="file" class="custom-file-input" (change)="imageClassification($event)">
           <label class="custom-file-label">Choose file</label>
         </div>
-        <div id="console"></div>
         <img [src]="classifiedImgScr" #classifiedImg *ngIf="classifiedImgScr"/>
       </div>
     </div>
