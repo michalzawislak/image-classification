@@ -7,6 +7,7 @@ import {KNNClassifier} from "@tensorflow-models/knn-classifier";
 import {MobileNet} from "@tensorflow-models/mobilenet";
 import {PredictionClass} from "../../model/predictionClass";
 import * as cocoSSD from '@tensorflow-models/coco-ssd';
+import {ObjectDetection} from "@tensorflow-models/coco-ssd";
 
 @Component({
   selector: 'app-image-uploader',
@@ -23,6 +24,7 @@ export class ImageUploaderComponent implements OnInit {
 
   public knnClassifier: KNNClassifier;
   public mobileNetModel: MobileNet;
+  public cocoSsd: ObjectDetection;
   public predictions: Prediction[];
   public loading: boolean = false;
 
@@ -31,6 +33,7 @@ export class ImageUploaderComponent implements OnInit {
   public async ngOnInit() {
     this.mobileNetModel = await mobilenet.load();
     this.knnClassifier = await knnClassifier.create();
+    this.cocoSsd = await cocoSSD.load({ base: "mobilenet_v2" });
   }
 
   public async getClassifierImages(event) {
@@ -75,7 +78,6 @@ export class ImageUploaderComponent implements OnInit {
 
   public async uploadModel(classifierModel, event) {
     let inputModel = event.target.files;
-    console.log("Uploading");
     let reader = new FileReader();
     if (inputModel.length > 0) {
       reader.onload = async () => {
@@ -86,11 +88,9 @@ export class ImageUploaderComponent implements OnInit {
           tensorObj[key] = tf.tensor(tensorObj[key], [tensorObj[key].length / 1024, 1024]);
         });
         classifierModel.setClassifierDataset(tensorObj);
-        console.log("Classifier has been set up! ");
       };
     }
     await reader.readAsText(inputModel[0]);
-    console.log("Uploaded");
   };
 
   public async addDatasetClass(img, label) {
@@ -117,6 +117,22 @@ export class ImageUploaderComponent implements OnInit {
           `);
           }
           await tf.nextFrame();
+        }, 0);
+      };
+    }
+  }
+
+  public async detectOnImage(event) {
+    if (event.target.files && event.target.files[0]) {
+      const reader = new FileReader();
+      reader.readAsDataURL(event.target.files[0]);
+      reader.onload = (res: any) => {
+        this.classifiedImgScr = res.target.result;
+
+        setTimeout(async () => {
+          const imgEl = this.classifiedImage.nativeElement;
+          let result = await this.cocoSsd.detect(imgEl);
+          console.log(result);
         }, 0);
       };
     }

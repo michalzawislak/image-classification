@@ -11,6 +11,7 @@
           <option>Paragon</option>
           <option>Faktura</option>
           <option>Bilet PKP</option>
+          <option>Sprzedawca</option>
         </select>
       </div>
       <div class="input-group">
@@ -36,9 +37,19 @@
           <input type="file" class="custom-file-input" (change)="imageClassification($event)">
           <label class="custom-file-label">Choose file</label>
         </div>
-        <img [src]="classifiedImgScr" #classifiedImg *ngIf="classifiedImgScr"/>
       </div>
     </div>
   </div>
+  <div class="row">
+    <div class="col-12">
+      <div class="check-data">
+        <div class="custom-file">
+          <input type="file" class="custom-file-input" (change)="detectOnImage($event)">
+          <label class="custom-file-label">Choose file to detect</label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <img [src]="classifiedImgScr" #classifiedImg *ngIf="classifiedImgScr"/>
 </div>
 
