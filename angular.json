@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "image-analizer": {
+    "image-classification": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/image-analizer",
+            "outputPath": "dist/image-classification",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -63,18 +63,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "image-analizer:build"
+            "browserTarget": "image-classification:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "image-analizer:build:production"
+              "browserTarget": "image-classification:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "image-analizer:build"
+            "browserTarget": "image-classification:build"
           }
         },
         "test": {
@@ -111,15 +111,15 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "image-analizer:serve"
+            "devServerTarget": "image-classification:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "image-analizer:serve:production"
+              "devServerTarget": "image-classification:serve:production"
             }
           }
         }
       }
     }},
-  "defaultProject": "image-analizer"
+  "defaultProject": "image-classification"
 }
