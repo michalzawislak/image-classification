@@ -1,12 +1,14 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, OnInit, Renderer2, ViewChild} from '@angular/core';
 import * as knnClassifier from '@tensorflow-models/knn-classifier';
 import * as tf from '@tensorflow/tfjs';
 import * as mobilenet from '@tensorflow-models/mobilenet';
-import {Prediction} from "../../model/prediction";
-import {KNNClassifier} from "@tensorflow-models/knn-classifier";
-import {MobileNet} from "@tensorflow-models/mobilenet";
-import {PredictionClass} from "../../model/predictionClass";
 import * as cocoSSD from '@tensorflow-models/coco-ssd';
+import * as use from '@tensorflow-models/universal-sentence-encoder';
+
+import {Prediction} from "../../model/prediction";
+import {MobileNet} from "@tensorflow-models/mobilenet";
+import {KNNClassifier} from "@tensorflow-models/knn-classifier";
+import {PredictionClass} from "../../model/predictionClass";
 import {ObjectDetection} from "@tensorflow-models/coco-ssd";
 
 @Component({
@@ -20,10 +22,10 @@ export class ImageUploaderComponent implements OnInit {
   @ViewChild('img', {static: false}) imageEl: ElementRef;
   @ViewChild('classifiedImg', {static: false}) classifiedImage: ElementRef;
   @ViewChild('label', {static: false}) labelInput: ElementRef;
-  @ViewChild('webcamElement', {static: false}) webcamElement: ElementRef;
 
   public knnClassifier: KNNClassifier;
   public mobileNetModel: MobileNet;
+  public use: any;
   public cocoSsd: ObjectDetection;
   public predictions: Prediction[];
   public loading: boolean = false;
@@ -33,7 +35,8 @@ export class ImageUploaderComponent implements OnInit {
   public async ngOnInit() {
     this.mobileNetModel = await mobilenet.load();
     this.knnClassifier = await knnClassifier.create();
-    this.cocoSsd = await cocoSSD.load({ base: "mobilenet_v2" });
+    this.use = await use.load();
+    this.cocoSsd = await cocoSSD.load({ base: "lite_mobilenet_v2" });
   }
 
   public async getClassifierImages(event) {
@@ -60,12 +63,14 @@ export class ImageUploaderComponent implements OnInit {
   }
 
   public async saveClassifier(classifierModel) {
+    this.loading = true;
     let dataset = classifierModel.getClassifierDataset()
     let datasetObject = {}
     Object.keys(dataset).forEach((key) => {
       let data = dataset[key].dataSync();
-      datasetObject[key] = Array.from(data);
+      datasetObject[key] = [...data];
     });
+
     let jsonModel = JSON.stringify(datasetObject)
 
     let downloader = document.createElement('a');
@@ -74,9 +79,11 @@ export class ImageUploaderComponent implements OnInit {
     document.body.appendChild(downloader);
     downloader.click();
     downloader.remove();
+    this.loading = false;
   };
 
   public async uploadModel(classifierModel, event) {
+    this.loading = true;
     let inputModel = event.target.files;
     let reader = new FileReader();
     if (inputModel.length > 0) {
@@ -91,6 +98,8 @@ export class ImageUploaderComponent implements OnInit {
       };
     }
     await reader.readAsText(inputModel[0]);
+    this.loading = false;
+
   };
 
   public async addDatasetClass(img, label) {
@@ -111,10 +120,7 @@ export class ImageUploaderComponent implements OnInit {
           if(this.knnClassifier.getNumClasses() > 0) {
             const activation = this.mobileNetModel.infer(imgEl, true);
             const result: PredictionClass = await this.knnClassifier.predictClass(activation);
-            console.log(`
-            prediction: ${result.label}\n
-            probability: ${result.confidences[result.label] * 100}%
-          `);
+            console.log(`prediction: ${result.label}, probability: ${result.confidences[result.label] * 100}%`);
           }
           await tf.nextFrame();
         }, 0);
@@ -132,7 +138,7 @@ export class ImageUploaderComponent implements OnInit {
         setTimeout(async () => {
           const imgEl = this.classifiedImage.nativeElement;
           let result = await this.cocoSsd.detect(imgEl);
-          console.log(result);
+          console.log(result)
         }, 0);
       };
     }

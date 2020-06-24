@@ -5,13 +5,16 @@
     </div>
   </div>
   <div class="row">
+    <div class="col-12">
+      <h2>MobileNet</h2>
+    </div>
     <div class="col-4">
       <div class="form-group">
         <select class="form-control" #label>
           <option>Paragon</option>
           <option>Faktura</option>
           <option>Bilet PKP</option>
-          <option>Sprzedawca</option>
+          <option>Bilet komunikacji</option>
         </select>
       </div>
       <div class="input-group">
@@ -25,7 +28,7 @@
     </div>
     <div class="col-4">
       <div class="custom-file">
-        <input type="file" class="custom-file-input" id="uploadClassifier" multiple (change)="uploadModel(knnClassifier, $event)">
+        <input type="file" class="custom-file-input" id="uploadClassifier" accept="application/JSON" multiple (change)="uploadModel(knnClassifier, $event)">
         <label class="custom-file-label" for="uploadClassifier">Upload model</label>
       </div>
     </div>
@@ -42,6 +45,14 @@
   </div>
   <div class="row">
     <div class="col-12">
+      <hr/>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12">
+      <h2>Coco Ssd</h2>
+    </div>
+    <div class="col-12">
       <div class="check-data">
         <div class="custom-file">
           <input type="file" class="custom-file-input" (change)="detectOnImage($event)">
@@ -50,6 +61,11 @@
       </div>
     </div>
   </div>
-  <img [src]="classifiedImgScr" #classifiedImg *ngIf="classifiedImgScr"/>
+  <div class="row">
+    <div class="col-6">
+      <img [src]="classifiedImgScr" #classifiedImg *ngIf="classifiedImgScr"/>
+    </div>
+  </div>
+
 </div>
 
