@@ -5,67 +5,74 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-12">
-      <h2>MobileNet</h2>
-    </div>
-    <div class="col-4">
-      <div class="form-group">
-        <select class="form-control" #label>
-          <option>Paragon</option>
-          <option>Faktura</option>
-          <option>Bilet PKP</option>
-          <option>Bilet komunikacji</option>
-        </select>
-      </div>
-      <div class="input-group">
-        <input type="file" class="custom-file-input" id="inputFile" multiple (change)="getClassifierImages($event)">
-        <label class="custom-file-label" for="inputFile">Images to classify</label>
-        <img [src]="imageSrc" #img *ngIf="imageSrc" [hidden]="true"/>
-      </div>
-    </div>
-    <div class="col-4">
-        <button type="button" class="btn btn-primary" (click)="saveClassifier(knnClassifier)">Save model json</button>
-    </div>
-    <div class="col-4">
-      <div class="custom-file">
-        <input type="file" class="custom-file-input" id="uploadClassifier" accept="application/JSON" multiple (change)="uploadModel(knnClassifier, $event)">
-        <label class="custom-file-label" for="uploadClassifier">Upload model</label>
-      </div>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-12">
-      <div class="check-data">
-        <div class="custom-file">
-          <input type="file" class="custom-file-input" (change)="imageClassification($event)">
-          <label class="custom-file-label">Choose file</label>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-12">
-      <hr/>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-12">
-      <h2>Coco Ssd</h2>
-    </div>
-    <div class="col-12">
-      <div class="check-data">
-        <div class="custom-file">
-          <input type="file" class="custom-file-input" (change)="detectOnImage($event)">
-          <label class="custom-file-label">Choose file to detect</label>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="row">
     <div class="col-6">
-      <img [src]="classifiedImgScr" #classifiedImg *ngIf="classifiedImgScr"/>
+      <div class="row">
+        <div class="col-12">
+          <h2>MobileNet</h2>
+        </div>
+        <div class="col-6">
+          <div class="form-group">
+            <select class="form-control" #label>
+              <option>Paragon</option>
+              <option>Faktura</option>
+              <option>Bilet PKP</option>
+              <option>Bilet komunikacji</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="input-group">
+            <input type="file" class="custom-file-input" id="inputFile" multiple (change)="getClassifierImages($event)">
+            <label class="custom-file-label" for="inputFile">Images to classify</label>
+            <img [src]="imageSrc" #img *ngIf="imageSrc" [hidden]="true"/>
+          </div>
+        </div>
+        <div class="col-6">
+          <button type="button" class="btn btn-primary w-100" (click)="saveClassifier(knnClassifier)">Save model json</button>
+        </div>
+        <div class="col-6">
+          <div class="custom-file">
+            <input type="file" class="custom-file-input" id="uploadClassifier" accept="application/JSON" multiple (change)="uploadModel(knnClassifier, $event)">
+            <label class="custom-file-label" for="uploadClassifier">Upload model</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <div class="check-data">
+            <div class="custom-file">
+              <input type="file" class="custom-file-input" (change)="imageClassification($event)">
+              <label class="custom-file-label">Choose file</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <hr/>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <h2>Coco Ssd</h2>
+        </div>
+        <div class="col-12">
+          <div class="check-data">
+            <div class="custom-file">
+              <input type="file" class="custom-file-input" (change)="detectOnImage($event)">
+              <label class="custom-file-label">Choose file to detect</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="row">
+        <div class="col-6">
+          <img [src]="classifiedImgScr" #classifiedImg *ngIf="classifiedImgScr"/>
+        </div>
+      </div>
     </div>
   </div>
-
 </div>
 
