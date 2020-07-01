@@ -118,8 +118,13 @@
               "devServerTarget": "image-classification:serve:production"
             }
           }
+        },
+        "deploy": {
+          "builder": "angular-cli-ghpages:deploy",
+          "options": {}
         }
       }
-    }},
+    }
+  },
   "defaultProject": "image-classification"
 }

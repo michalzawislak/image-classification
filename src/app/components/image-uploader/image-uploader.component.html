@@ -62,7 +62,14 @@
               <input type="file" class="custom-file-input" (change)="detectOnImage($event)">
               <label class="custom-file-label">Choose file to detect</label>
             </div>
+            <video hidden id="vid" width="800" height="600"></video>
+            <canvas id="canvas"></canvas>
           </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <h2>Universal Sentence Encoder</h2>
         </div>
       </div>
     </div>

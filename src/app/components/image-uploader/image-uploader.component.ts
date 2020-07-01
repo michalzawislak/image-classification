@@ -22,21 +22,28 @@ export class ImageUploaderComponent implements OnInit {
   @ViewChild('img', {static: false}) imageEl: ElementRef;
   @ViewChild('classifiedImg', {static: false}) classifiedImage: ElementRef;
   @ViewChild('label', {static: false}) labelInput: ElementRef;
+  @ViewChild('canvas', {static: false}) canvas: ElementRef;
+  private video: HTMLVideoElement;
 
   public knnClassifier: KNNClassifier;
   public mobileNetModel: MobileNet;
+  public useModel: any = tf.sequential();
   public use: any;
   public cocoSsd: ObjectDetection;
   public predictions: Prediction[];
   public loading: boolean = false;
 
-  constructor() { }
+  constructor() {
+  }
 
   public async ngOnInit() {
     this.mobileNetModel = await mobilenet.load();
     this.knnClassifier = await knnClassifier.create();
     this.use = await use.load();
-    this.cocoSsd = await cocoSSD.load({ base: "lite_mobilenet_v2" });
+    this.cocoSsd = await cocoSSD.load({base: "lite_mobilenet_v2"});
+
+    await this.webcam_init();
+
   }
 
   public async getClassifierImages(event) {
@@ -45,7 +52,7 @@ export class ImageUploaderComponent implements OnInit {
     this.loading = true;
     if (event.target.files && event.target.files[0]) {
       const files = [...event.target.files];
-      files.forEach( (file, i) => {
+      files.forEach((file, i) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
 
@@ -54,8 +61,8 @@ export class ImageUploaderComponent implements OnInit {
           setTimeout(async () => {
             const imgEl = this.imageEl.nativeElement;
             this.predictions = await this.mobileNetModel.classify(imgEl);
-            await this.addDatasetClass(imgEl,label);
-            if(i === files.length - 1) this.loading = false;
+            await this.addDatasetClass(imgEl, label);
+            if (i === files.length - 1) this.loading = false;
           }, 0);
         };
       })
@@ -104,7 +111,7 @@ export class ImageUploaderComponent implements OnInit {
 
   public async addDatasetClass(img, label) {
     // @ts-ignore
-    const activation = this.mobileNetModel.infer(img,'conv_preds');
+    const activation = this.mobileNetModel.infer(img, 'conv_preds');
     this.knnClassifier.addExample(activation, label);
   };
 
@@ -117,7 +124,7 @@ export class ImageUploaderComponent implements OnInit {
 
         setTimeout(async () => {
           const imgEl = this.classifiedImage.nativeElement;
-          if(this.knnClassifier.getNumClasses() > 0) {
+          if (this.knnClassifier.getNumClasses() > 0) {
             const activation = this.mobileNetModel.infer(imgEl, true);
             const result: PredictionClass = await this.knnClassifier.predictClass(activation);
             console.log(`prediction: ${result.label}, probability: ${result.confidences[result.label] * 100}%`);
@@ -143,4 +150,73 @@ export class ImageUploaderComponent implements OnInit {
       };
     }
   }
+
+  public async predictWithCocoModel() {
+    this.detectFrame(this.video,this.cocoSsd);
+  }
+
+  public async webcam_init() {
+    this.video = <HTMLVideoElement> document.getElementById("vid");
+
+    navigator.mediaDevices
+      .getUserMedia({
+        audio: false,
+        video: {
+          facingMode: "user"
+        }
+      })
+      .then(stream => {
+        this.video.srcObject = stream;
+        this.video.onloadedmetadata = () => {
+          this.video.play().then(() => {
+            this.predictWithCocoModel();
+          });
+        };
+      });
+  }
+
+  public detectFrame (video, model) {
+    model.detect(video).then(predictions => {
+      this.renderPredictions(predictions);
+      requestAnimationFrame(() => {
+        this.detectFrame(video, model);
+      });
+    });
+  }
+
+  public renderPredictions (predictions) {
+    const canvas = <HTMLCanvasElement> document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    canvas.width  = 300;
+    canvas.height = 300;
+
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    const font = "16px sans-serif";
+    ctx.font = font;
+    ctx.textBaseline = "top";
+    ctx.drawImage(this.video,0, 0,300,300);
+
+    predictions.forEach(prediction => {
+      const x = prediction.bbox[0];
+      const y = prediction.bbox[1];
+      const width = prediction.bbox[2];
+      const height = prediction.bbox[3];
+      ctx.strokeStyle = "#00FFFF";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, width, height);
+      ctx.fillStyle = "#00FFFF";
+      const textWidth = ctx.measureText(prediction.class).width;
+      const textHeight = parseInt(font, 10);
+      ctx.fillRect(x, y, textWidth + 4, textHeight + 4);
+    });
+
+    predictions.forEach(prediction => {
+      const x = prediction.bbox[0];
+      const y = prediction.bbox[1];
+      ctx.fillStyle = "#000000";
+      ctx.fillText(prediction.class, x, y);
+    });
+  };
 }
