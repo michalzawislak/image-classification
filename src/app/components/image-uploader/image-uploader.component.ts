@@ -22,6 +22,7 @@ export class ImageUploaderComponent implements OnInit {
   @ViewChild('img', {static: false}) imageEl: ElementRef;
   @ViewChild('classifiedImg', {static: false}) classifiedImage: ElementRef;
   @ViewChild('label', {static: false}) labelInput: ElementRef;
+  @ViewChild('canvas', {static: false}) canvas: ElementRef;
 
   public knnClassifier: KNNClassifier;
   public mobileNetModel: MobileNet;
@@ -29,6 +30,8 @@ export class ImageUploaderComponent implements OnInit {
   public cocoSsd: ObjectDetection;
   public predictions: Prediction[];
   public loading: boolean = false;
+  public pred: string;
+  public prop: number;
 
   constructor() { }
 
@@ -121,6 +124,8 @@ export class ImageUploaderComponent implements OnInit {
             const activation = this.mobileNetModel.infer(imgEl, true);
             const result: PredictionClass = await this.knnClassifier.predictClass(activation);
             console.log(`prediction: ${result.label}, probability: ${result.confidences[result.label] * 100}%`);
+            this.pred = result.label;
+            this.prop = result.confidences[result.label] * 100;
           }
           await tf.nextFrame();
         }, 0);
@@ -134,13 +139,49 @@ export class ImageUploaderComponent implements OnInit {
       reader.readAsDataURL(event.target.files[0]);
       reader.onload = (res: any) => {
         this.classifiedImgScr = res.target.result;
-
+        
         setTimeout(async () => {
           const imgEl = this.classifiedImage.nativeElement;
-          let result = await this.cocoSsd.detect(imgEl);
-          console.log(result)
+          let result = await this.cocoSsd.detect(imgEl).then((prediction) => { 
+            this.drawCanvas(prediction, this.canvas, imgEl);
+          });
         }, 0);
       };
     }
+  }
+
+  public drawCanvas(predictions, canv, image) {
+    const canvas = <HTMLCanvasElement> document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    
+    canvas.width  = image.offsetWidth;
+    canvas.height = image.offsetHeight;
+
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    const font = "16px sans-serif";
+    ctx.font = font;
+    ctx.textBaseline = "top";
+    // ctx.drawImage(image,0, 0,300,300);
+
+    predictions.forEach(prediction => {
+      const x = prediction.bbox[0];
+      const y = prediction.bbox[1];
+      const width = prediction.bbox[2];
+      const height = prediction.bbox[3];
+      ctx.strokeStyle = "#00FFFF";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, width, height);
+      ctx.fillStyle = "#00FFFF";
+      const textWidth = ctx.measureText(prediction.class).width;
+      const textHeight = parseInt(font, 10); 
+      ctx.fillRect(x, y, textWidth + 4, textHeight + 4);
+    });
+
+    predictions.forEach(prediction => {
+      const x = prediction.bbox[0];
+      const y = prediction.bbox[1];
+      ctx.fillStyle = "#000000";
+      ctx.fillText(prediction.class, x, y);
+    });
   }
 }

@@ -68,8 +68,10 @@
     </div>
     <div class="col-6">
       <div class="row">
-        <div class="col-6">
+        <div class="col-6 image-container">
+          <canvas id="canvas" #canvas></canvas>
           <img [src]="classifiedImgScr" #classifiedImg *ngIf="classifiedImgScr"/>
+          <p *ngIf="pred && prop">Prediction: {{pred}} - {{prop}}%</p>
         </div>
       </div>
     </div>
